@@ -6,7 +6,7 @@
 /*   By: xlebecq <xlebecq@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/25 21:54:45 by xlebecq           #+#    #+#             */
-/*   Updated: 2024/08/07 22:22:15 by xlebecq          ###   ########.fr       */
+/*   Updated: 2024/08/07 22:46:22 by xlebecq          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,6 @@ void	ft_process_parent(char **argv, int *fd, char **envp)
 	close(fd[0]);
 	close(fd[1]);
 	close(output_file);
-	printf("TESTOUPTUP");
 	ft_pipe(argv[3], envp);
 }
 
@@ -130,9 +129,9 @@ int	main(int argc, char **argv, char **envp)
 		ft_perror_msg("Error forking", NULL);
 	if (pid2 == 0)
 		ft_process_parent(argv, fd, envp);
-	waitpid(pid, NULL, 0);
-	waitpid(pid2, NULL, 0);
 	close(fd[0]);
 	close(fd[1]);
+	waitpid(pid, NULL, 0);
+	waitpid(pid2, NULL, 0);
 	return (EXIT_SUCCESS);
 }
