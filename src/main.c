@@ -6,7 +6,7 @@
 /*   By: xlebecq <xlebecq@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/25 21:54:45 by xlebecq           #+#    #+#             */
-/*   Updated: 2024/08/06 22:05:39 by xlebecq          ###   ########.fr       */
+/*   Updated: 2024/08/07 22:22:15 by xlebecq          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,9 +33,12 @@ char	*find_path(char *cmd, char **envp)
 		join_path = ft_strjoin(dir_path[i], "/");
 		path = ft_strjoin(join_path, cmd);
 		free(join_path);
-		if (access(path, F_OK) == 0)
-			return (path);
-		free(path);
+		if (path != NULL)
+		{
+			if (access(path, F_OK) == 0)
+				return (path);
+			free(path);
+		}
 	}
 	free_2d_array(dir_path);
 	return (NULL);
@@ -49,7 +52,7 @@ void	ft_pipe(char *arg, char **envp)
 
 	cmd = ft_split(arg, ' ');
 	if (!cmd)
-		ft_perror_msg("Error");
+		ft_perror_msg("Error: no command", NULL);
 	path = find_path(cmd[0], envp);
 	if (!path)
 	{	
@@ -57,11 +60,11 @@ void	ft_pipe(char *arg, char **envp)
 		while (cmd[++i])
 			free(cmd[i]);
 		free(cmd);
-		ft_perror_msg("Error");
+		ft_perror_msg("Error: cmd dont exist", NULL);
 	}
 	if (execve(path, cmd, envp) == -1)
 	{
-		ft_perror_msg("Error: execve failed");
+		ft_perror_msg("Error: execve failed", NULL);
 	}
 }
 
@@ -72,14 +75,12 @@ void	ft_process_child(char **argv, int *fd, char **envp)
 	input_file = open (argv[1], O_RDONLY);
 	if (input_file == -1)
 	{
-		close(fd[0]);
-		close(fd[1]);
-		ft_perror_msg("Error opening input_file");
+		ft_perror_msg("Error opening input_file", fd);
 	}
 	if (dup2(fd[1], STDOUT_FILENO) == -1)
-		ft_perror_msg("Error redirecting stdout");
+		ft_perror_msg("Error redirecting stdout", NULL);
 	if (dup2(input_file, STDIN_FILENO) == -1)
-		ft_perror_msg("Error redirecting stdin");
+		ft_perror_msg("Error redirecting stdin", NULL);
 	close(fd[0]);
 	close(fd[1]);
 	close(input_file);
@@ -93,14 +94,15 @@ void	ft_process_parent(char **argv, int *fd, char **envp)
 
 	output_file = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (output_file == -1)
-		ft_perror_msg("Error opening output_file");
+		ft_perror_msg("Error opening output_file", NULL);
 	if (dup2(fd[0], STDIN_FILENO) == -1)
-		ft_perror_msg("Error redirecting stdin");
+		ft_perror_msg("Error redirecting stdin", NULL);
 	if (dup2(output_file, STDOUT_FILENO) == -1)
-		ft_perror_msg("Error redirecting stdout");
+		ft_perror_msg("Error redirecting stdout", NULL);
 	close(fd[0]);
 	close(fd[1]);
 	close(output_file);
+	printf("TESTOUPTUP");
 	ft_pipe(argv[3], envp);
 }
 
@@ -110,25 +112,27 @@ int	main(int argc, char **argv, char **envp)
 	pid_t	pid;
 	pid_t	pid2;
 
-	fd[0] = -1;
-	fd[1] = -1;
 	if (argc != 5)
-		ft_error_msg("Error: invalid number of arguments.", fd);
+		ft_perror_msg("Error: invalid number of arguments.", NULL);
 	if (pipe(fd) == -1)
 	{
-		ft_perror_msg("Error creating pipe");
+		ft_perror_msg("Error creating pipe", NULL);
 	}
 	pid = fork();
 	if (pid == -1)
-		ft_perror_msg("Error forking");
+		ft_perror_msg("Error forking", NULL);
 	if (pid == 0)
+	{
 		ft_process_child(argv, fd, envp);
+	}
 	pid2 = fork();
-	if (pid == -1)
-		ft_perror_msg("Error forking");
-	if (pid == 0)
+	if (pid2 == -1)
+		ft_perror_msg("Error forking", NULL);
+	if (pid2 == 0)
 		ft_process_parent(argv, fd, envp);
 	waitpid(pid, NULL, 0);
 	waitpid(pid2, NULL, 0);
+	close(fd[0]);
+	close(fd[1]);
 	return (EXIT_SUCCESS);
 }

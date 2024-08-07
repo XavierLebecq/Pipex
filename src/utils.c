@@ -6,7 +6,7 @@
 /*   By: xlebecq <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/31 13:30:24 by xlebecq           #+#    #+#             */
-/*   Updated: 2024/07/31 14:10:49 by xlebecq          ###   ########.fr       */
+/*   Updated: 2024/08/07 21:05:58 by xlebecq          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,13 @@ void	ft_error_msg(char *msg, int *fd)
 	exit(EXIT_FAILURE);
 }
 
-void	ft_perror_msg(char *msg)
+void	ft_perror_msg(char *msg, int *fd)
 {
+	if (fd != NULL)
+	{
+		close(fd[0]);
+		close(fd[1]);
+	}
 	perror(msg);
 	exit(EXIT_FAILURE);
 }
