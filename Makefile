@@ -6,13 +6,13 @@
 #    By: xlebecq <xlebecq@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/06/25 23:18:50 by xlebecq           #+#    #+#              #
-#    Updated: 2024/08/06 21:44:35 by xlebecq          ###   ########.fr        #
+#    Updated: 2024/08/07 16:53:14 by xlebecq          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = pipex
 
-CC = cc
+CC = clang
 
 CFLAGS = -Wall -Wextra -Werror -g3
 
