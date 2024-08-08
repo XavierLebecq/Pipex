@@ -6,24 +6,11 @@
 /*   By: xlebecq <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/31 13:30:24 by xlebecq           #+#    #+#             */
-/*   Updated: 2024/08/07 21:05:58 by xlebecq          ###   ########.fr       */
+/*   Updated: 2024/08/08 12:42:21 by xlebecq          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
-
-void	ft_error_msg(char *msg, int *fd)
-{
-	if (fd != NULL)
-	{
-		if (fd[0] != -1)
-			close (fd[0]);
-		if (fd[1] != -1)
-			close (fd[1]);
-	}
-	ft_printf ("%s\n", msg);
-	exit(EXIT_FAILURE);
-}
 
 void	ft_perror_msg(char *msg, int *fd)
 {
