@@ -6,7 +6,7 @@
 /*   By: xlebecq <xlebecq@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/25 21:54:45 by xlebecq           #+#    #+#             */
-/*   Updated: 2024/08/07 22:46:22 by xlebecq          ###   ########.fr       */
+/*   Updated: 2024/08/08 12:12:49 by xlebecq          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ char	*find_path(char *cmd, char **envp)
 
 	i = 0;
 	if (!envp || !envp[0])
-		return (ft_printf("Error: envp is NULL"), NULL);
+		ft_perror_msg("Error: envp is NULL", NULL);
 	while (envp[i] && ft_strnstr(envp[i], "PATH", 4) == 0)
 		i++;
 	if (!envp[i])
@@ -33,12 +33,9 @@ char	*find_path(char *cmd, char **envp)
 		join_path = ft_strjoin(dir_path[i], "/");
 		path = ft_strjoin(join_path, cmd);
 		free(join_path);
-		if (path != NULL)
-		{
-			if (access(path, F_OK) == 0)
-				return (path);
-			free(path);
-		}
+		if (access(path, F_OK) == 0)
+			return (path);
+		free(path);
 	}
 	free_2d_array(dir_path);
 	return (NULL);
@@ -48,22 +45,22 @@ void	ft_pipe(char *arg, char **envp)
 {
 	char	**cmd;
 	char	*path;
-	int		i;
 
 	cmd = ft_split(arg, ' ');
-	if (!cmd)
-		ft_perror_msg("Error: no command", NULL);
+	if (!cmd || !cmd[0])
+	{
+		free_2d_array(cmd);
+		ft_perror_msg("Error: empty command", NULL);
+	}
 	path = find_path(cmd[0], envp);
 	if (!path)
-	{	
-		i = -1;
-		while (cmd[++i])
-			free(cmd[i]);
-		free(cmd);
-		ft_perror_msg("Error: cmd dont exist", NULL);
+	{
+		free_2d_array(cmd);
+		ft_perror_msg("Error: command not found", NULL);
 	}
 	if (execve(path, cmd, envp) == -1)
 	{
+		free_2d_array(cmd);
 		ft_perror_msg("Error: execve failed", NULL);
 	}
 }
@@ -78,9 +75,9 @@ void	ft_process_child(char **argv, int *fd, char **envp)
 		ft_perror_msg("Error opening input_file", fd);
 	}
 	if (dup2(fd[1], STDOUT_FILENO) == -1)
-		ft_perror_msg("Error redirecting stdout", NULL);
+		ft_perror_msg("Error redirecting stdout", fd);
 	if (dup2(input_file, STDIN_FILENO) == -1)
-		ft_perror_msg("Error redirecting stdin", NULL);
+		ft_perror_msg("Error redirecting stdin", fd);
 	close(fd[0]);
 	close(fd[1]);
 	close(input_file);
@@ -94,11 +91,11 @@ void	ft_process_parent(char **argv, int *fd, char **envp)
 
 	output_file = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (output_file == -1)
-		ft_perror_msg("Error opening output_file", NULL);
+		ft_perror_msg("Error opening output_file", fd);
 	if (dup2(fd[0], STDIN_FILENO) == -1)
-		ft_perror_msg("Error redirecting stdin", NULL);
+		ft_perror_msg("Error redirecting stdin", fd);
 	if (dup2(output_file, STDOUT_FILENO) == -1)
-		ft_perror_msg("Error redirecting stdout", NULL);
+		ft_perror_msg("Error redirecting stdout", fd);
 	close(fd[0]);
 	close(fd[1]);
 	close(output_file);
@@ -121,9 +118,7 @@ int	main(int argc, char **argv, char **envp)
 	if (pid == -1)
 		ft_perror_msg("Error forking", NULL);
 	if (pid == 0)
-	{
 		ft_process_child(argv, fd, envp);
-	}
 	pid2 = fork();
 	if (pid2 == -1)
 		ft_perror_msg("Error forking", NULL);
